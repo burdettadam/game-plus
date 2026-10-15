@@ -12,8 +12,15 @@ Use Node.js 22 or later. From the repository root:
     node scripts/create-attempt.cjs othello session-2
     node scripts/create-attempt.cjs connect-four-practice session-3
     node scripts/create-attempt.cjs minesweeper session-4
+    node scripts/create-attempt.cjs othello-python session-5
 
 Each command creates a standalone directory under attempts/ with pinned stubs, current supplied scaffolding, shared behavior tests, and a checklist. It contains no completed solution, dependencies, or build output. Earlier attempts are never overwritten. Install Tic-Tac-Toe dependencies in its attempt directory; the JavaScript challenges require no install.
+
+Choose another destination with --output:
+
+    node scripts/create-attempt.cjs othello othello-01 --output ../game-plus-attempts
+
+The name is optional, including when --output is supplied; omitting it generates a unique name. Options can precede or follow the name.
 
 Run the new attempt's setup checks before starting a timer. Work only in the documented editable files. Implement one checkpoint at a time, run focused tests, then demonstrate a complete CLI session and explain an edge case and complexity. Review the example after the attempt.
 
@@ -21,7 +28,7 @@ All projects print the selected implementation before running tests. Default com
 
 ## Common Commands
 
-Run these from any challenge directory. Use Node.js 22 or later; the root .nvmrc selects Node 22. Tic-Tac-Toe needs yarn install first; the other games need no dependencies.
+Run these from any challenge directory. npm wrappers use Node.js 22 or later; the root .nvmrc selects Node 22. Tic-Tac-Toe needs yarn install first. Othello Python also needs Python 3.11 or later and otherwise uses only the standard library. It can run without Node or npm using the native commands below.
 
 | Command | Purpose |
 | --- | --- |
@@ -38,6 +45,8 @@ Run these from any challenge directory. Use Node.js 22 or later; the root .nvmrc
 
 Append -- rules, -- game, or -- cli to test:example for a focused solution check. Pass game options after --, such as npm run example -- --position scenarios/small-win.json for Minesweeper. Yarn can invoke the same script names.
 
+For Python-only practice, use python3 scripts/run.py start, python3 scripts/run.py test:setup, python3 scripts/run.py test:example, and python3 scripts/run.py verify:example from othello-python/. The same dispatcher supports every common command name. Create a fresh attempt without Node using python3 scripts/run.py practice:new python-session-1; it uses the shared root attempts/ directory by default.
+
 ## Challenges
 
 | Challenge | Language | Practice |
@@ -46,6 +55,7 @@ Append -- rules, -- game, or -- cli to test:example for a focused solution check
 | [Othello](othello/README.md) | JavaScript | Complete six rule and turn-management functions in a supplied CLI scaffold. Compare your work with the [completed example](othello/example/README.md). |
 | [Connect Four](connect-four-practice/README.md) | JavaScript | Complete six placement, winning-line, and turn-transition functions; review the [solution](connect-four-practice/example/README.md). |
 | [Minesweeper](minesweeper/README.md) | JavaScript | Complete six geometry, clue, reveal-region, win, and action functions; review the [solution](minesweeper/example/README.md). |
+| [Othello (Python)](othello-python/README.md) | Python 3.11+ | Complete six capture and turn-management functions using dataclasses, independent nested lists, and explicit passes; review the [solution](othello-python/example/README.md). |
 
 ```text
 game-plus/
@@ -58,6 +68,8 @@ game-plus/
 ├── minesweeper/            Neighbor geometry, flood traversal, and visibility
 │   └── example/            Completed source and independent verification
 ├── scripts/                Fresh-attempt generator and its verification
+├── othello-python/         Standard-library Python challenge and shared tests
+│   └── example/            Completed source and independent verification
 └── attempts/               Local practice sessions (ignored by Git)
 ```
 
@@ -70,6 +82,7 @@ game-plus/
 | Translating rules into code | Implement wins, captures, legal moves, and results. | Correctly handle every required direction and endgame condition. |
 | Boundary handling | Examine corners, edges, occupied cells, and gaps. | Reject invalid moves without changing state or consuming a turn. |
 | Controlling side effects | Copy nested board arrays before applying actions. | Queries leave inputs unchanged and successor states are independent. |
+| Python data modeling | Use frozen dataclasses for metadata while copying nested lists. | Explain why frozen State metadata does not make its board immutable; reject boolean coordinates and preserve row independence. |
 | Managing turns | Model alternating players, forced passes, and completion. | Distinguish a blocked player, a finished game, and a draw. |
 | Region traversal | Expand Minesweeper zero regions with visited tracking and flag boundaries. | Reveal safe numbered boundaries once each without opening mines. |
 | Placement and outcome precedence | Drop Connect Four discs and evaluate the resulting position. | Enforce gravity and distinguish a final-square win from a draw. |

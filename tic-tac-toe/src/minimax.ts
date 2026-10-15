@@ -1,5 +1,5 @@
 import { Score, Player, Game, Actor } from './game';
-import * as shuffleArray from 'shuffle-array';
+import shuffleArray = require('shuffle-array');
 
 /**
  * Chooses a move assuming both players make optimal decisions.

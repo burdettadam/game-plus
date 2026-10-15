@@ -8,11 +8,32 @@ const { randomUUID } = require('node:crypto');
 const challenges = require('./challenges.cjs');
 
 const root = path.resolve(__dirname, '..');
-const [game, requestedName, ...options] = process.argv.slice(2);
+const [game, ...args] = process.argv.slice(2);
+let requestedName;
+let outputDirectory;
+let invalidOptions = false;
+// Options can appear before or after the optional name. Validate all arguments
+// before creating directories so malformed calls cannot leave partial attempts.
+for (let index = 0; index < args.length; index++) {
+  const argument = args[index];
+  if (argument === '--output') {
+    const value = args[++index];
+    if (outputDirectory !== undefined || !value || !value.trim() || value.startsWith('--')) {
+      invalidOptions = true;
+      break;
+    }
+    outputDirectory = value;
+  } else if (argument.startsWith('-') || requestedName !== undefined) {
+    invalidOptions = true;
+    break;
+  } else {
+    requestedName = argument;
+  }
+}
 if (
   !challenges.includes(game) ||
-  (requestedName && !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(requestedName)) ||
-  (options.length && (options.length !== 2 || options[0] !== '--output'))
+  (requestedName !== undefined && !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(requestedName)) ||
+  invalidOptions
 ) {
   console.error(
     'Usage: node scripts/create-attempt.cjs ' +
@@ -24,9 +45,21 @@ if (
 const name =
   requestedName ||
   game + '-' + new Date().toISOString().replace(/[:.]/g, '-') + '-' + randomUUID().slice(0, 8);
-const parent = options.length ? path.resolve(options[1]) : path.join(root, 'attempts');
+const parent =
+  outputDirectory !== undefined ? path.resolve(outputDirectory) : path.join(root, 'attempts');
 const destination = path.join(parent, name);
 const source = path.join(root, game);
+// Python keeps its standard-library-only generator, pinned stubs, and baseline hashes.
+if (fs.existsSync(path.join(source, 'src', 'cli.py'))) {
+  const { spawnSync } = require('node:child_process');
+  const result = spawnSync(
+    process.execPath,
+    [path.join(source, 'scripts', 'run.cjs'), 'practice:new', name, '--output', parent],
+    { stdio: 'inherit' },
+  );
+  if (result.error) throw result.error;
+  process.exit(result.status || (result.signal ? 1 : 0));
+}
 fs.mkdirSync(parent, { recursive: true });
 try {
   fs.mkdirSync(destination);

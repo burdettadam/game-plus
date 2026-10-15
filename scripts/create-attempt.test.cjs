@@ -18,7 +18,12 @@ for (const game of require('./challenges.cjs')) {
       for (const excluded of ['example', 'node_modules', 'lib', 'starter']) {
         assert.strictEqual(fs.existsSync(path.join(attempt, excluded)), false);
       }
-      for (const file of fs.readdirSync(path.join(root, game, 'starter', 'src'))) {
+      const starterFiles = fs.readdirSync(path.join(root, game, 'starter', 'src'), {
+        withFileTypes: true,
+      });
+      // Python may create cache directories beside the pinned source files.
+      for (const entry of starterFiles.filter((entry) => entry.isFile())) {
+        const file = entry.name;
         assert.strictEqual(
           fs.readFileSync(path.join(attempt, 'src', file), 'utf8'),
           fs.readFileSync(path.join(root, game, 'starter', 'src', file), 'utf8'),
@@ -48,9 +53,12 @@ for (const game of require('./challenges.cjs')) {
           'dir',
         );
       }
+      const python = game === 'othello-python';
       const setup = spawnSync(
         process.execPath,
-        [path.join(attempt, 'scripts', 'test.cjs'), 'starter', 'setup'],
+        python
+          ? [path.join(attempt, 'scripts', 'run.cjs'), 'test:setup']
+          : [path.join(attempt, 'scripts', 'test.cjs'), 'starter', 'setup'],
         {
           encoding: 'utf8',
           env: { ...process.env, NODE_PATH: path.join(root, 'tic-tac-toe', 'node_modules') },
@@ -69,5 +77,50 @@ test('fresh attempt: unsafe names and unknown games are rejected', () => {
   for (const args of [['unknown'], ['othello', '../overwrite']]) {
     const result = spawnSync(process.execPath, [generator, ...args], { encoding: 'utf8' });
     assert.strictEqual(result.status, 2);
+  }
+});
+
+test('fresh attempt: --output works without a name and before a supplied name', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'game-plus-output-test-'));
+  try {
+    const unnamed = spawnSync(process.execPath, [generator, 'othello', '--output', temporary], {
+      encoding: 'utf8',
+    });
+    assert.strictEqual(unnamed.status, 0, unnamed.stderr);
+    const [generatedName] = fs.readdirSync(temporary);
+    assert.match(generatedName, /^othello-/);
+    assert.ok(fs.existsSync(path.join(temporary, generatedName, 'package.json')));
+    const named = spawnSync(
+      process.execPath,
+      [generator, 'othello', '--output', temporary, 'named-session'],
+      { encoding: 'utf8' },
+    );
+    assert.strictEqual(named.status, 0, named.stderr);
+    assert.ok(fs.existsSync(path.join(temporary, 'named-session', 'package.json')));
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('fresh attempt: malformed options fail before creating any attempts', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'game-plus-options-test-'));
+  try {
+    for (const args of [
+      ['--output'],
+      ['--output', ''],
+      ['--output', '--unknown'],
+      ['--output', temporary, '--output', temporary],
+      ['--output', temporary, 'first', 'second'],
+      ['--output', temporary, '--unknown'],
+      ['--output', temporary, ''],
+    ]) {
+      const result = spawnSync(process.execPath, [generator, 'othello', ...args], {
+        encoding: 'utf8',
+      });
+      assert.strictEqual(result.status, 2, result.stderr);
+    }
+    assert.deepEqual(fs.readdirSync(temporary), []);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
   }
 });

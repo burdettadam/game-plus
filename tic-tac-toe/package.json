@@ -4,11 +4,11 @@
   },
   "devDependencies": {
     "@types/argparse": "~1.0.0",
-    "@types/node": "~11.9.0",
+    "@types/node": "^22",
     "@types/shuffle-array": "~0.0.0",
     "prettier": "~1.15.0",
     "source-map-support": "~0.5.0",
-    "typescript": "~3.3.0"
+    "typescript": "~6.0.3"
   },
   "dependencies": {
     "argparse": "~1.0.0",
@@ -32,6 +32,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "typecheck": "node scripts/typecheck.cjs",
     "compile": "tsc -p .",
     "compile:example": "tsc -p example",
     "start": "node scripts/start.cjs starter",
@@ -47,7 +48,7 @@
     "test:example:ai": "node scripts/test.cjs example ai",
     "practice:new": "node ../scripts/create-attempt.cjs tic-tac-toe",
     "format": "prettier --config ../.prettierrc --write 'src/**/*.ts' 'tests/*.js' 'scripts/*.cjs' package.json tsconfig.json",
-    "play": "node lib/play.js"
+    "play": "node scripts/start.cjs starter"
   },
   "version": "0.1.0"
 }

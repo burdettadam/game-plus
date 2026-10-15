@@ -41,6 +41,8 @@ npm test
 
 Every test command prints the selected starter or example path and rebuilds the selected TypeScript implementation. The 40 core tests cover rules, state isolation, outcomes, and CLI behavior. An untouched starter passes its nine setup tests; rule-dependent tests fail until the stubs work.
 
+Run npm run typecheck to check source, example, and pinned templates without emitting files. The workspace uses the installed TypeScript compiler for both builds and editor diagnostics.
+
 Use uppercase coordinates such as B2. Player 1 is X (MAX); player 2 is O (MIN). Other commands are moves, score, board, help, and quit. npm start rebuilds after edits; npm run compile is also available separately.
 
 ## Start a Fresh Attempt

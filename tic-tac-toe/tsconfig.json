@@ -1,16 +1,19 @@
 {
   "compileOnSave": false,
   "include": ["src/**/*.ts"],
-  "exclude": ["src/schematics/**/*"],
+  "exclude": ["node_modules", "lib"],
   "compilerOptions": {
     "declaration": true,
-    "downlevelIteration": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"],
+    "noEmitOnError": true,
     "outDir": "lib",
     "strict": true,
     "sourceMap": true,
     "rootDir": "src",
-    "target": "es2017"
+    "target": "ES2022"
   }
 }
